@@ -5,21 +5,16 @@ import * as z from "zod";
 import axios from "axios";
 import { MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
-import {
-  ChatCompletionMessage,
-  CreateChatCompletionRequestMessage,
-} from "openai/resources/chat/index.mjs";
 import { BotAvatar } from "@/components/bot-avatar";
 
 const formSchema = z.object({
@@ -30,8 +25,8 @@ const formSchema = z.object({
 
 function ConversationPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<
-    CreateChatCompletionRequestMessage[]
+  const [historyMessages, setHistoryMessages] = useState<
+    { input: string; response: string }[]
   >([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,17 +40,18 @@ function ConversationPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionMessage = {
-        role: "user",
-        content: values.prompt,
-      };
-      const newMessages = [...messages, userMessage];
-
       const response = await axios.post("/api/conversation", {
-        messages: newMessages,
+        history: historyMessages,
+        input: values.prompt as string,
       });
 
-      setMessages((current) => [...current, userMessage, response.data]);
+      setHistoryMessages(
+        (current) =>
+          [
+            ...current,
+            { input: values.prompt, response: response.data.response },
+          ] as any
+      );
 
       form.reset();
     } catch (error) {
@@ -123,23 +119,21 @@ function ConversationPage() {
             <Loader />
           </div>
         )}
-        {messages.length === 0 && !isLoading && (
+        {!historyMessages && !isLoading && (
           <Empty label="No conversation started." />
         )}
-        <div className="flex flex-col-reverse gap-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.content}
-              className={cn(
-                "p-8 w-full flex items-start gap-x-8 rounded-lg",
-                message.role === "user"
-                  ? "bg-white border border-black/10"
-                  : "bg-muted"
-              )}
-            >
-              {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-              <p className="text-sm">{message.content}</p>
-            </div>
+        <div className="flex flex-col-reverse gap-y-4 p-4">
+          {historyMessages?.map((message) => (
+            <Fragment key={message.input}>
+              <div className="p-8 w-full flex items-start gap-x-8 rounded-lg bg-white border border-black/10">
+                <UserAvatar />
+                <p className="text-sm">{message.input}</p>
+              </div>
+              <div className="p-8 w-full flex items-start gap-x-8 rounded-lg bg-muted">
+                <BotAvatar />
+                <p className="text-sm">{message.response}</p>
+              </div>
+            </Fragment>
           ))}
         </div>
       </div>

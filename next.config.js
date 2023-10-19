@@ -1,4 +1,22 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  images: {
+    domains: [
+      "*.cloudfront.net",
+      "googleusercontent.com",
+      "oaidalleapiprodscus.blob.core.windows.net",
+      "cdn.openai.com",
+      "*",
+    ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.cloudfront.net",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
