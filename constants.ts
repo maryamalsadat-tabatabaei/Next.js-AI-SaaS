@@ -8,7 +8,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 
-export const MAX_FREE_COUNTS = 5;
+export const MAX_FREE_COUNTS = 3;
 
 export const routes = [
   {

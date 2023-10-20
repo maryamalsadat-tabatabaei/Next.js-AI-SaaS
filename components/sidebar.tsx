@@ -7,10 +7,14 @@ import { Montserrat } from "next/font/google";
 
 import { cn } from "@/lib/utils";
 import { routes } from "@/constants";
+import { FreeCounter } from "@/components/free-counter";
 
 const poppins = Montserrat({ weight: "600", subsets: ["latin"] });
 
-function Sidebar() {
+interface Props {
+  apiLimitCount: number;
+}
+function Sidebar({ apiLimitCount = 0 }: Props) {
   const pathname = usePathname();
 
   return (
@@ -51,6 +55,7 @@ function Sidebar() {
           ))}
         </div>
       </div>
+      <FreeCounter apiLimitCount={apiLimitCount} />
     </div>
   );
 }

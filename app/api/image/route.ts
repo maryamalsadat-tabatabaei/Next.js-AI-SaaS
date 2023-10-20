@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import NLPCloudClient from "nlpcloud";
+import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 export async function POST(req: Request) {
   try {
@@ -15,6 +16,14 @@ export async function POST(req: Request) {
       return new NextResponse("Text is required", { status: 400 });
     }
 
+    const freeTrial = await checkApiLimit();
+    if (!freeTrial) {
+      return new NextResponse(
+        "Free trial has expired. Please upgrade to pro.",
+        { status: 403 }
+      );
+    }
+
     const client = new NLPCloudClient({
       model: "stable-diffusion",
       token: process.env.NLP_CLOUD_API_KEY as string,
@@ -23,6 +32,7 @@ export async function POST(req: Request) {
     const response = await client.imageGeneration({
       text,
     });
+    await incrementApiLimit();
 
     return NextResponse.json(response?.data);
   } catch (error) {
