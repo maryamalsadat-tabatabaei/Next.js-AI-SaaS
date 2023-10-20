@@ -91,7 +91,7 @@ const VideoPage = () => {
               )}
             />
             <Button
-              className="col-span-12 lg:col-span-2 w-full"
+              className="bg-orange-700 hover:bg-orange-800 col-span-12 lg:col-span-2 w-full"
               type="submit"
               disabled={isLoading}
               size="icon"

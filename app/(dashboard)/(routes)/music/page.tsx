@@ -92,7 +92,7 @@ const MusicPage = () => {
               )}
             />
             <Button
-              className="col-span-12 lg:col-span-2 w-full"
+              className="bg-emerald-500 hover:bg-emerald-600 col-span-12 lg:col-span-2 w-full"
               type="submit"
               disabled={isLoading}
               size="icon"

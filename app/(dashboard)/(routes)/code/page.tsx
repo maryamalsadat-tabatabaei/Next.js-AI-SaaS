@@ -108,7 +108,7 @@ const CodePage = () => {
                 )}
               />
               <Button
-                className="col-span-12 lg:col-span-2 w-full"
+                className="bg-green-700 hover:bg-green-800 col-span-12 lg:col-span-2 w-full"
                 type="submit"
                 disabled={isLoading}
                 size="icon"

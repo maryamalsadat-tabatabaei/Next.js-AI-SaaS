@@ -103,7 +103,7 @@ function ConversationPage() {
               )}
             />
             <Button
-              className="col-span-12 lg:col-span-2 w-full"
+              className="bg-violet-500 hover:bg-violet-600 col-span-12 lg:col-span-2 w-full"
               type="submit"
               disabled={isLoading}
               size="icon"

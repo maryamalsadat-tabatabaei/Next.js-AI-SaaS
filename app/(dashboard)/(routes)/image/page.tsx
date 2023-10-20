@@ -196,7 +196,7 @@ const PhotoPage = () => {
               )}
             />
             <Button
-              className="col-span-12 lg:col-span-2 w-full"
+              className="bg-pink-700 hover:bg-pink-800 col-span-12 lg:col-span-2 w-full"
               type="submit"
               disabled={isLoading}
               size="icon"
