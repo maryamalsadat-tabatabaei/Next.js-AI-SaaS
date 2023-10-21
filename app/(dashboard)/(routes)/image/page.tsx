@@ -30,7 +30,7 @@ import { amountOptions, resolutionOptions } from "@/constants";
 const PhotoPage = () => {
   const router = useRouter();
   const premiumModel = usePremium();
-  const [photo, setPhoto] = useState<string>("");
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const formSchema = z.object({
     prompt: z.string().min(1, {
@@ -53,11 +53,11 @@ const PhotoPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setPhoto("");
+      setPhotos([]);
 
       const response = await axios.post("/api/image", { text: values.prompt });
       const url = response.data.url;
-      setPhoto(url);
+      setPhotos([url]);
       form.reset();
     } catch (error: any) {
       if (error?.response?.status === 403) {
@@ -180,25 +180,27 @@ const PhotoPage = () => {
             <Loader />
           </div>
         )}
-        {!photo && !isLoading && <Empty label="No images generated." />}
+        {photos.length === 0 && !isLoading && (
+          <Empty label="No images generated." />
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-          {/* {photos.map((src) => ( */}
-          <Card key={photo} className="rounded-lg overflow-hidden">
-            <div className="relative aspect-square">
-              <Image fill alt="Generated" src={photo} />
-            </div>
-            <CardFooter className="p-2">
-              <Button
-                onClick={() => window.open(photo)}
-                variant="secondary"
-                className="w-full"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            </CardFooter>
-          </Card>
-          {/* ))} */}
+          {photos.map((src) => (
+            <Card key={src} className="rounded-lg overflow-hidden">
+              <div className="relative aspect-square">
+                <Image fill alt="Generated" src={src} />
+              </div>
+              <CardFooter className="p-2">
+                <Button
+                  onClick={() => window.open(src)}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </div>
     </div>

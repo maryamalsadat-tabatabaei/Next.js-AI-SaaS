@@ -20,7 +20,7 @@ import { usePremium } from "@/hooks/use-premium";
 const MusicPage = () => {
   const router = useRouter();
   const premiumModel = usePremium();
-  const [music, setMusic] = useState<string>("");
+  const [music, setMusic] = useState<string>();
 
   const formSchema = z.object({
     prompt: z.string().min(1, {
@@ -39,7 +39,7 @@ const MusicPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setMusic("");
+      setMusic(undefined);
 
       const response = await axios.post("/api/music", values);
       setMusic(response?.data?.audio);
