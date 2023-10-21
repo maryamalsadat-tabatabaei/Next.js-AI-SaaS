@@ -14,16 +14,19 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
-
-export const formSchema = z.object({
-  prompt: z.string().min(1, {
-    message: "Prompt is required.",
-  }),
-});
+import { usePremium } from "@/hooks/use-premium";
+import toast from "react-hot-toast";
 
 const VideoPage = () => {
   const router = useRouter();
+  const premiumModel = usePremium();
   const [video, setVideo] = useState<string>();
+
+  const formSchema = z.object({
+    prompt: z.string().min(1, {
+      message: "Prompt is required.",
+    }),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,7 +46,11 @@ const VideoPage = () => {
       setVideo(response.data[0]);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        premiumModel.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

@@ -18,6 +18,8 @@ import { Loader } from "@/components/loader";
 import { UserAvatar } from "@/components/user-avatar";
 import { CreateChatCompletionRequestMessage } from "openai/resources/chat/index.mjs";
 import { Empty } from "@/components/empty";
+import toast from "react-hot-toast";
+import { usePremium } from "@/hooks/use-premium";
 
 const formSchema = z.object({
   prompt: z.string().min(1, {
@@ -27,6 +29,7 @@ const formSchema = z.object({
 
 const CodePage = () => {
   const router = useRouter();
+  const premiumModel = usePremium();
   const [messages, setMessages] = useState<
     CreateChatCompletionRequestMessage[]
   >([]);
@@ -59,7 +62,11 @@ const CodePage = () => {
 
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        premiumModel.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

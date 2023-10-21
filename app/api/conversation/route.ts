@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import NLPCloudClient from "nlpcloud";
 import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +21,9 @@ export async function POST(req: Request) {
     }
 
     const freeTrial = await checkApiLimit();
-    if (!freeTrial) {
+    const isPremium = await checkSubscription();
+
+    if (!freeTrial && !isPremium) {
       return new NextResponse(
         "Free trial has expired. Please upgrade to pro.",
         { status: 403 }
@@ -37,7 +40,10 @@ export async function POST(req: Request) {
       context: "",
       history,
     });
-    await incrementApiLimit();
+
+    if (!isPremium) {
+      await incrementApiLimit();
+    }
 
     return NextResponse.json(response?.data);
   } catch (error) {

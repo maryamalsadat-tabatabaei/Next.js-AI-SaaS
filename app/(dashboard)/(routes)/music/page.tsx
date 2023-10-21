@@ -6,7 +6,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { Music, Send } from "lucide-react";
+import { Music } from "lucide-react";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
@@ -14,16 +14,19 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
-
-export const formSchema = z.object({
-  prompt: z.string().min(1, {
-    message: "Music prompt is required",
-  }),
-});
+import toast from "react-hot-toast";
+import { usePremium } from "@/hooks/use-premium";
 
 const MusicPage = () => {
   const router = useRouter();
-  const [music, setMusic] = useState<string>();
+  const premiumModel = usePremium();
+  const [music, setMusic] = useState<string>("");
+
+  const formSchema = z.object({
+    prompt: z.string().min(1, {
+      message: "Music prompt is required",
+    }),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,15 +39,18 @@ const MusicPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setMusic(undefined);
+      setMusic("");
 
       const response = await axios.post("/api/music", values);
-      console.log(response);
+      setMusic(response?.data?.audio);
 
-      setMusic(response.data.audio);
       form.reset();
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        premiumModel.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

@@ -16,10 +16,26 @@ import { tools } from "@/constants";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { usePremium } from "@/hooks/use-premium";
+import axios from "axios";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export const PremiumModal = () => {
+  const [loading, setLoading] = useState(false);
   const premiumModal = usePremium();
 
+  const onSubscribe = async () => {
+    try {
+      setLoading(true);
+
+      const response = await axios.get("/api/stripe");
+      window.location.href = response.data.url;
+    } catch (error) {
+      toast.error("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Dialog open={premiumModal.isOpen} onOpenChange={premiumModal.onClose}>
       <DialogContent>
@@ -50,7 +66,13 @@ export const PremiumModal = () => {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button size="lg" variant="premium" className="w-full">
+          <Button
+            disabled={loading}
+            onClick={onSubscribe}
+            size="lg"
+            variant="premium"
+            className="w-full"
+          >
             Upgrade
             <Zap className="w-4 h-4 ml-2 fill-white" />
           </Button>

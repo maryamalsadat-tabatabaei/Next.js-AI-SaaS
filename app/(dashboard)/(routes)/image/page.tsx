@@ -23,56 +23,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-export const formSchema = z.object({
-  prompt: z.string().min(1, {
-    message: "Photo prompt is required",
-  }),
-  amount: z.string().min(1),
-  resolution: z.string().min(1),
-});
-
-export const amountOptions = [
-  {
-    value: "1",
-    label: "1 Photo",
-  },
-  {
-    value: "2",
-    label: "2 Photos",
-  },
-  {
-    value: "3",
-    label: "3 Photos",
-  },
-  {
-    value: "4",
-    label: "4 Photos",
-  },
-  {
-    value: "5",
-    label: "5 Photos",
-  },
-];
-
-export const resolutionOptions = [
-  {
-    value: "256x256",
-    label: "256x256",
-  },
-  {
-    value: "512x512",
-    label: "512x512",
-  },
-  {
-    value: "1024x1024",
-    label: "1024x1024",
-  },
-];
+import { usePremium } from "@/hooks/use-premium";
+import toast from "react-hot-toast";
+import { amountOptions, resolutionOptions } from "@/constants";
 
 const PhotoPage = () => {
   const router = useRouter();
-  const [photos, setPhotos] = useState<string[]>([]);
+  const premiumModel = usePremium();
+  const [photo, setPhoto] = useState<string>("");
+
+  const formSchema = z.object({
+    prompt: z.string().min(1, {
+      message: "Photo prompt is required",
+    }),
+    amount: z.string().min(1),
+    resolution: z.string().min(1),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,14 +53,18 @@ const PhotoPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setPhotos([]);
+      setPhoto("");
 
       const response = await axios.post("/api/image", { text: values.prompt });
-      // const urls = response.data.map((image: { url: string }) => image.url);
       const url = response.data.url;
-      setPhotos([url]);
+      setPhoto(url);
+      form.reset();
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        premiumModel.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }
@@ -210,27 +180,25 @@ const PhotoPage = () => {
             <Loader />
           </div>
         )}
-        {photos.length === 0 && !isLoading && (
-          <Empty label="No images generated." />
-        )}
+        {!photo && !isLoading && <Empty label="No images generated." />}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-          {photos.map((src) => (
-            <Card key={src} className="rounded-lg overflow-hidden">
-              <div className="relative aspect-square">
-                <Image fill alt="Generated" src={src} />
-              </div>
-              <CardFooter className="p-2">
-                <Button
-                  onClick={() => window.open(src)}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {/* {photos.map((src) => ( */}
+          <Card key={photo} className="rounded-lg overflow-hidden">
+            <div className="relative aspect-square">
+              <Image fill alt="Generated" src={photo} />
+            </div>
+            <CardFooter className="p-2">
+              <Button
+                onClick={() => window.open(photo)}
+                variant="secondary"
+                className="w-full"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            </CardFooter>
+          </Card>
+          {/* ))} */}
         </div>
       </div>
     </div>

@@ -16,6 +16,8 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/empty";
 import { BotAvatar } from "@/components/bot-avatar";
+import { usePremium } from "@/hooks/use-premium";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
   prompt: z.string().min(1, {
@@ -25,6 +27,7 @@ const formSchema = z.object({
 
 function ConversationPage() {
   const router = useRouter();
+  const premiumModel = usePremium();
   const [historyMessages, setHistoryMessages] = useState<
     { input: string; response: string }[]
   >([]);
@@ -54,8 +57,12 @@ function ConversationPage() {
       );
 
       form.reset();
-    } catch (error) {
-      console.log("error", error);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        premiumModel.onOpen();
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       router.refresh();
     }

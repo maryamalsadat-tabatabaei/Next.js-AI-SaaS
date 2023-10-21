@@ -13,8 +13,9 @@ const poppins = Montserrat({ weight: "600", subsets: ["latin"] });
 
 interface Props {
   apiLimitCount: number;
+  isPremium: boolean;
 }
-function Sidebar({ apiLimitCount = 0 }: Props) {
+function Sidebar({ apiLimitCount = 0, isPremium = false }: Props) {
   const pathname = usePathname();
 
   return (
@@ -55,7 +56,7 @@ function Sidebar({ apiLimitCount = 0 }: Props) {
           ))}
         </div>
       </div>
-      <FreeCounter apiLimitCount={apiLimitCount} />
+      <FreeCounter isPremium={isPremium} apiLimitCount={apiLimitCount} />
     </div>
   );
 }
